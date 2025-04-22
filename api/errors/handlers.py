@@ -1,4 +1,4 @@
- from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
@@ -6,7 +6,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from typing import Union, Dict, Any
 import logging
 import traceback
-import json
+from datetime import datetime
 
 from backend.api.errors.exceptions import BaseAPIException
 from backend.core.config import settings
@@ -120,8 +120,8 @@ def create_error_response(
     if details:
         response["error"]["details"] = details
     
-    # 감사 로깅을 위한 추가 정보
-    response["error"]["timestamp"] = str(datetime.now().isoformat())
+    # 타임스탬프 추가
+    response["error"]["timestamp"] = datetime.utcnow().isoformat()
     
     return JSONResponse(
         status_code=status_code,

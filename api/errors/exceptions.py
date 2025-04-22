@@ -10,21 +10,10 @@ class BaseAPIException(HTTPException):
         status_code: int,
         detail: Any = None,
         headers: Optional[Dict[str, Any]] = None,
-        error_code: str = None
+        error_code: str = "INTERNAL_ERROR"
     ):
         super().__init__(status_code=status_code, detail=detail, headers=headers)
         self.error_code = error_code
-
-class InsufficientFundsException(BaseAPIException):
-    """
-    잔액 부족 예외
-    """
-    def __init__(self, detail: str = "Insufficient funds"):
-        super().__init__(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=detail,
-            error_code="INSUFFICIENT_FUNDS"
-        )
 
 class ResourceNotFoundException(BaseAPIException):
     """
@@ -86,15 +75,15 @@ class ForbiddenException(BaseAPIException):
             error_code="FORBIDDEN"
         )
 
-class RateLimitExceededException(BaseAPIException):
+class InsufficientFundsException(BaseAPIException):
     """
-    속도 제한 초과 예외
+    잔액 부족 예외
     """
-    def __init__(self, detail: str = "Rate limit exceeded"):
+    def __init__(self, detail: str = "Insufficient funds"):
         super().__init__(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=detail,
-            error_code="RATE_LIMIT_EXCEEDED"
+            error_code="INSUFFICIENT_FUNDS"
         )
 
 class ServiceUnavailableException(BaseAPIException):
@@ -106,4 +95,27 @@ class ServiceUnavailableException(BaseAPIException):
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=detail,
             error_code="SERVICE_UNAVAILABLE"
+        )
+
+class ValidationException(BaseAPIException):
+    """
+    유효성 검증 실패 예외
+    """
+    def __init__(self, detail: str = "Validation failed", errors: Optional[Dict[str, Any]] = None):
+        super().__init__(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=detail,
+            error_code="VALIDATION_ERROR"
+        )
+        self.errors = errors
+
+class RateLimitExceededException(BaseAPIException):
+    """
+    속도 제한 초과 예외
+    """
+    def __init__(self, detail: str = "Rate limit exceeded"):
+        super().__init__(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=detail,
+            error_code="RATE_LIMIT_EXCEEDED"
         )

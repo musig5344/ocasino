@@ -6,9 +6,11 @@ import logging
 from backend.api.routers import auth, partners, games, wallet, reports
 from backend.api.errors.handlers import register_exception_handlers
 from backend.core.config import settings
-from backend.middlewares.ip_whitelist import IPWhitelistMiddleware
-from backend.middlewares.request_validation import RequestValidationMiddleware
-from backend.middlewares.audit_log import AuditLogMiddleware
+from backend.middlewares.auth_middleware import AuthMiddleware
+from backend.middlewares.rate_limit_middleware import RateLimitMiddleware
+from backend.middlewares.audit_log_middleware import AuditLogMiddleware
+from backend.middlewares.error_handling_middleware import ErrorHandlingMiddleware
+from backend.utils.request_context import request_context_middleware
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +37,12 @@ def setup_api(app: FastAPI) -> None:
             allow_headers=["*"],
         )
     
-    # 보안 미들웨어 추가
-    app.add_middleware(IPWhitelistMiddleware)
-    app.add_middleware(RequestValidationMiddleware)
-    app.add_middleware(AuditLogMiddleware)
+    # 미들웨어 등록 (순서 중요)
+    app.middleware("http")(request_context_middleware)      # 요청 컨텍스트 초기화
+    app.middleware("http")(ErrorHandlingMiddleware())       # 오류 처리 (가장 바깥쪽)
+    app.middleware("http")(AuditLogMiddleware())            # 감사 로깅
+    app.middleware("http")(RateLimitMiddleware())           # 속도 제한
+    app.middleware("http")(AuthMiddleware())                # 인증 (가장 안쪽)
     
     # 예외 핸들러 등록
     register_exception_handlers(app)
@@ -50,17 +54,4 @@ def setup_api(app: FastAPI) -> None:
     @app.get("/api/health", tags=["Health"])
     def health_check():
         """API 상태 확인 엔드포인트"""
-        return {"status": "ok"}
-    
-    # 요청 로깅 미들웨어
-    @app.middleware("http")
-    async def log_requests(request: Request, call_next):
-        """요청 로깅 미들웨어"""
-        # 요청 처리
-        response = await call_next(request)
-        
-        # 상태 확인 요청은 로깅에서 제외
-        if not request.url.path.startswith("/api/health"):
-            logger.info(f"{request.method} {request.url.path} -> {response.status_code}")
-        
-        return response
+        return {"status": "ok", "version": settings.VERSION}

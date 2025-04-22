@@ -1,18 +1,15 @@
 from typing import Generator
 from fastapi import Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.db.database import SessionLocal
+from backend.db.database import get_db as get_db_session
 
-def get_db() -> Generator[Session, None, None]:
+async def get_db() -> Generator[AsyncSession, None, None]:
     """
     데이터베이스 세션 의존성
     
     Yields:
-        Session: 데이터베이스 세션
+        AsyncSession: 데이터베이스 세션
     """
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+    async with get_db_session() as session:
+        yield session
