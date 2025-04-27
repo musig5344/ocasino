@@ -1,0 +1,1 @@
+# backend/partners/__init__.py 

@@ -1,0 +1,46 @@
+# 웹 프레임워크
+fastapi
+uvicorn[standard]
+starlette==0.32.0
+
+# 데이터베이스
+sqlalchemy[asyncio]
+alembic
+asyncpg
+psycopg2-binary # For alembic or synchronous operations if needed
+
+# 인증 및 보안
+python-jose[cryptography]
+passlib[bcrypt]
+pyjwt==2.8.0
+cryptography==41.0.5
+
+# 캐싱
+redis
+fakeredis==2.20.0  # 테스트용
+
+# 메시징
+kafka-python
+aiokafka==0.8.1
+
+# 유틸리티
+pydantic[email]
+python-multipart==0.0.6
+email-validator==2.1.0
+python-dotenv
+httpx
+
+# 로깅 및 모니터링
+loguru==0.7.2
+psutil==5.9.6
+prometheus-client==0.19.0
+prometheus-fastapi-instrumentator==7.0.0
+pydantic-settings==2.1.0
+
+# 테스트
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+respx==0.20.2  # HTTP 모킹
+assertpy==1.1  # 가독성 높은 assertion
+aiosqlite==0.20.0 # 추가: 비동기 SQLite 테스트용
